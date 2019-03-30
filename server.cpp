@@ -18,6 +18,7 @@
 #include "Utils/utils.h"
 #include "Login/login.h"
 #include "World/world.h"
+#include "Player/player.h"
 
 using namespace std;
 
@@ -34,6 +35,8 @@ Utils Util;
 Login login;
 
 World world;
+
+Player player;
 
 void Server::onConnect(ENetPeer *peer) {
 	PacketData *data = p.CreateOnConnectPacket();
@@ -70,7 +73,8 @@ void Server::onReceive(ENetPeer *peer, ENetPacket *packet) {
 		case TYPE_3: {
 			string PData = (char*)data->data;
 			if(PData.find("action|join_request") == 0) {
-				WorldData *wData = world.GetWorld("lol");
+				world.SendWorld(peer, "lol");
+				player.SpawnPlayer(peer, TYPE_LOCAL);
 			}
 		}
 		break;
