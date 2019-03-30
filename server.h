@@ -9,6 +9,7 @@ struct ServerData {
 class Server {
 	public:
 		void onConnect(ENetPeer *peer);
-		void onReceive();
-		void onDisconnect();
+		void onReceive(ENetPeer *peer, ENetPacket *packet);
+		void onDisconnect(ENetPeer *peer);
+		void DumpArray(unsigned char* data, int len);
 };
