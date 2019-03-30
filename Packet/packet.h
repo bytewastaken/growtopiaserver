@@ -1,7 +1,7 @@
 struct PacketData {
 	int type;
 	unsigned char *data;
-
+	int length;
 };
 
 class Packet {

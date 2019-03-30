@@ -6,16 +6,18 @@
 
 using namespace std;
 
+Utils u;
+
 void Packet::getType() {
 
 }
 
 void Packet::Send(ENetPeer *peer, PacketData *data) {
 	unsigned char *Packet = new unsigned char[sizeof(data->data) + 5];
-	memcpy(Packet, &data->type, 4);
-	memcpy(Packet + 4, data->data, sizeof(data->data));
 	int zero = 0;
-	memcpy(Packet + 4 + sizeof(data->data), &zero, 1);
+	memcpy(Packet, &data->type, 4);
+	memcpy(Packet + 4, data->data, data->length);
+	memcpy(Packet + 4 + data->length, &zero, 1);
 	ENetPacket *packet = enet_packet_create(Packet, sizeof(Packet), ENET_PACKET_FLAG_RELIABLE);
 	enet_peer_send(peer, 0, packet);
 }
@@ -30,11 +32,8 @@ PacketData *Packet::Unpack(ENetPacket *packet) {
 	Utils u;
 	PacketData *data = new PacketData();
 	data->type = *packet->data;
-	switch(data->type) {
-		case 2:
-			printf("Type 2 packet");
-		break;
-	}
+	data->data = packet->data + 4;
+	data->length = packet->dataLength - 4;
 	return data;
 }
 
@@ -49,5 +48,6 @@ PacketData *Packet::MakeRawPacket(int num, unsigned char* data, int len) {
 	char zero = 0;
 	memcpy(packData, &zero, 1);
 	PData->data = packData;
+	PData->length = len + 1;
 	return PData;
 }

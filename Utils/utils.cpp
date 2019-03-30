@@ -21,3 +21,9 @@ std::vector<std::string> Utils::Explode(std::string const &s, const char &delim)
 
     return result;
 }
+
+void Utils::DumpArray(unsigned char* data, int len) {
+    for(int i = 0; i < len; i++) {
+        printf("Index: %i Hex: %02x Data: %c\r\n", i, data[i], data[i]);
+    }
+}

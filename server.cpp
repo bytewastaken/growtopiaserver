@@ -26,12 +26,6 @@ Server ServerEvent;
 
 Packet p;
 
-void Server::DumpArray(unsigned char* data, int len) {
-    for(int i = 0; i < len; i++) {
-        printf("Index: %i Hex: %02x Data: %c\r\n", i, data[i], data[i]);
-    }
-}
-
 void Server::onConnect(ENetPeer *peer) {
 	PacketData *data = p.CreateOnConnectPacket();
 	p.Send(peer, data);

@@ -11,5 +11,4 @@ class Server {
 		void onConnect(ENetPeer *peer);
 		void onReceive(ENetPeer *peer, ENetPacket *packet);
 		void onDisconnect(ENetPeer *peer);
-		void DumpArray(unsigned char* data, int len);
 };
