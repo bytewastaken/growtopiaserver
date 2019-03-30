@@ -21,6 +21,8 @@ Requirements
 
 Linux Operating System
 
+**NO SUPPORT FOR WINDOWS**
+
 Authors
 -------
 
