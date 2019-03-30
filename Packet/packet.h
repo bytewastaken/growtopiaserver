@@ -21,6 +21,20 @@ struct PacketData {
 	int indexes = 0;
 };
 
+struct PlayerMoving {
+	int packetType;
+	int netID;
+	float x;
+	float y;
+	int characterState;
+	int plantingTree;
+	float XSpeed;
+	float YSpeed;
+	int punchX;
+	int punchY;
+
+};
+
 class Packet {
 	public:
 		void getType();
@@ -35,6 +49,8 @@ class Packet {
 		void SendOnLoginPacket(ENetPeer *peer);
 		void SendItemsDat(ENetPeer *peer);
 		PacketData *AppendInt(PacketData *p, int val);
+		PlayerMoving *UnpackPlayerMoving(PacketData *data);
+		PacketData *PackPlayerMoving(PlayerMoving *data);
 	private:
 		PacketData *MakeRawPacket(int num, unsigned char* data, int len);
 };

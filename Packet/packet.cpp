@@ -143,3 +143,42 @@ PacketData *Packet::AppendInt(PacketData *p, int val) {
 	p->indexes++;
 	return p;
 }
+
+PlayerMoving *Packet::UnpackPlayerMoving(PacketData *data) {
+	PlayerMoving* dataStruct = new PlayerMoving;
+	memcpy(&dataStruct->packetType, data->data, 4);
+	memcpy(&dataStruct->netID, data->data + 4, 4);
+	memcpy(&dataStruct->characterState, data->data + 12, 4);
+	memcpy(&dataStruct->plantingTree, data->data + 20, 4);
+	memcpy(&dataStruct->x, data->data + 24, 4);
+	memcpy(&dataStruct->y, data->data + 28, 4);
+	memcpy(&dataStruct->XSpeed, data->data + 32, 4);
+	memcpy(&dataStruct->YSpeed, data->data + 36, 4);
+	memcpy(&dataStruct->punchX, data->data + 44, 4);
+	memcpy(&dataStruct->punchY, data->data + 48, 4);
+	return dataStruct;
+}
+
+PacketData *Packet::PackPlayerMoving(PlayerMoving *dataStruct) {
+	unsigned char* data = new unsigned char[56];
+	PacketData *PData = new PacketData();
+	for (int i = 0; i < 56; i++)
+	{
+		data[i] = 0;
+	}
+	int four = 4;
+	memcpy(data, &four, 4);
+	memcpy(data + 4, &dataStruct->packetType, 4);
+	memcpy(data + 8, &dataStruct->netID, 4);
+	memcpy(data + 16, &dataStruct->characterState, 4);
+	memcpy(data + 24, &dataStruct->plantingTree, 4);
+	memcpy(data + 28, &dataStruct->x, 4);
+	memcpy(data + 32, &dataStruct->y, 4);
+	memcpy(data + 36, &dataStruct->XSpeed, 4);
+	memcpy(data + 40, &dataStruct->YSpeed, 4);
+	memcpy(data + 48, &dataStruct->punchX, 4);
+	memcpy(data + 52, &dataStruct->punchY, 4);
+	PData->data = data;
+	PData->length = 56;
+	return PData;
+}

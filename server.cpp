@@ -38,6 +38,8 @@ World world;
 
 Player player;
 
+int CID = 1;
+
 void Server::onConnect(ServerData *host) {
 	PacketData *data = p.CreateOnConnectPacket();
 	p.Send(host->peer, data);
@@ -77,9 +79,42 @@ void Server::onReceive(ServerData *host, ENetPacket *packet) {
 			string PData = (char*)data->data;
 			if(PData.find("action|join_request") == 0) {
 				world.SendWorld(peer, "lol");
-				player.SpawnPlayer(peer, ((PlayerInfo*)(peer->data))->username, TYPE_LOCAL);
+				((PlayerInfo*)(peer->data))->currentWorld = "lol";
+				((PlayerInfo*)(peer->data))->netID = CID;
+				CID++;
+				string MyNetID = std::to_string(((PlayerInfo*)(peer->data))->netID);
+				player.SpawnPlayer(peer, MyNetID, ((PlayerInfo*)(peer->data))->username, TYPE_LOCAL);
+				ENetPeer *currentPeer;
+				for(currentPeer = host->server->peers; currentPeer < &host->server->peers[host->server->peerCount]; ++currentPeer) {
+					if(peer != currentPeer && currentPeer->state == ENET_PEER_STATE_CONNECTED) {
+						if(player.isHere(peer, currentPeer) == true) {
+							string currentNetID = std::to_string(((PlayerInfo*)(currentPeer->data))->netID);
+							player.SpawnPlayer(peer, currentNetID, ((PlayerInfo*)(currentPeer->data))->username, TYPE_NON_LOCAL);
+							player.SpawnPlayer(currentPeer, MyNetID, ((PlayerInfo*)(peer->data))->username, TYPE_NON_LOCAL);
+						}
+					}
+				}
 			}
 		}
+		break;
+
+		case TYPE_4: {
+			PlayerMoving *PMov = p.UnpackPlayerMoving(data);
+			if(PMov->packetType == 0) {
+				((PlayerInfo*)(peer->data))->x = PMov->x;
+				((PlayerInfo*)(peer->data))->y = PMov->y;
+				ENetPeer *currentPeer;
+				for(currentPeer = host->server->peers; currentPeer < &host->server->peers[host->server->peerCount]; ++currentPeer) {
+					if(peer != currentPeer && currentPeer->state == ENET_PEER_STATE_CONNECTED) {
+						if(player.isHere(peer, currentPeer) == true) {
+							PMov->netID = ((PlayerInfo*)(peer->data))->netID;
+							PacketData *PData = p.PackPlayerMoving(PMov);
+							p.Send(currentPeer, PData);
+						}
+					}
+				}
+			}
+		} 
 		break;
 	}
 	//Util.DumpArray(data->data, data->length);
