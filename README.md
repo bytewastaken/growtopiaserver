@@ -1,1 +1,34 @@
-test
+ColdChip - Growtopia Server
+===========================
+
+This is a advanced Growtopia Server made in C++
+
+[![Build Status](https://api.travis-ci.org/coldchip/growtopiaserver.svg?branch=master)](https://api.travis-ci.org/coldchip/growtopiaserver.svg?branch=master)
+
+Installation / Usage
+--------------------
+
+Download using `git clone` or the download button](https://github.com/coldchip/growtopiaserver/archive/master.zip).
+
+Navigate to the downloaded folder directory.
+
+To build `$ make`
+
+To run `$ ./server`
+
+Requirements
+------------
+
+Linux Operating System
+
+Authors
+-------
+
+- ColdChip  | [GitHub](https://github.com/coldchip)
+
+See also the list of [contributors](https://github.com/coldchip/growtopiaserver/contributors) who participated in this project.
+
+License
+-------
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details
