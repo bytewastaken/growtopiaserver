@@ -18,6 +18,8 @@
 
 using namespace std;
 
+string initString = "\r\nColdChip - Growtopia Server\r\n===========================";
+
 ServerData *host = new ServerData();
 
 Server ServerEvent;
@@ -47,6 +49,7 @@ void Server::onDisconnect(ENetPeer *peer) {
 int main ()
 {
 	setbuf(stdout, NULL);
+	cout << (initString) << endl;
 	enet_address_set_host (&host->address, "0.0.0.0");
 	host->address.port = 10003;
 	host->server = enet_host_create (&host->address, 3200, 2, 0, 0);

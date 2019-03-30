@@ -32,7 +32,7 @@ PacketData *Packet::Unpack(ENetPacket *packet) {
 	data->type = *packet->data;
 	switch(data->type) {
 		case 2:
-			
+			printf("Type 2 packet");
 		break;
 	}
 	return data;
