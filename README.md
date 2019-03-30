@@ -8,7 +8,7 @@ This is a advanced Growtopia Server made in C++
 Installation / Usage
 --------------------
 
-Download using `git clone` or the download button](https://github.com/coldchip/growtopiaserver/archive/master.zip).
+Download using `git clone` or click [here](https://github.com/coldchip/growtopiaserver/archive/master.zip).
 
 Navigate to the downloaded folder directory.
 
