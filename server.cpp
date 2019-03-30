@@ -33,6 +33,11 @@ void Server::onConnect(ENetPeer *peer) {
 
 void Server::onReceive(ENetPeer *peer, ENetPacket *packet) {
 	PacketData *data = p.Unpack(packet);
+	switch(data->type) {
+		case TYPE_2:
+			
+		break;
+	}
 	//this->DumpArray(packet->data, packet->dataLength);
 }
 

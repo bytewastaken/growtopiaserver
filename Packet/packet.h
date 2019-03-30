@@ -1,3 +1,11 @@
+const int TYPE_1 = 1;
+
+const int TYPE_2 = 2;
+
+const int TYPE_3 = 3;
+
+const int TYPE_4 = 4;
+
 struct PacketData {
 	int type;
 	unsigned char *data;
