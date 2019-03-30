@@ -8,7 +8,7 @@ struct ServerData {
 
 class Server {
 	public:
-		void onConnect(ENetPeer *peer);
-		void onReceive(ENetPeer *peer, ENetPacket *packet);
-		void onDisconnect(ENetPeer *peer);
+		void onConnect(ServerData *host);
+		void onReceive(ServerData *host, ENetPacket *packet);
+		void onDisconnect(ServerData *host);
 };

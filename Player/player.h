@@ -9,5 +9,10 @@ const string TYPE_NON_LOCAL = "";
 
 class Player {
 	public:
-		void SpawnPlayer(ENetPeer *peer, string type);
+		void SpawnPlayer(ENetPeer *peer, string username, string type);
+};
+
+struct PlayerInfo {
+	string username;
+	string userID;
 };

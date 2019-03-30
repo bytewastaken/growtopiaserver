@@ -38,12 +38,13 @@ World world;
 
 Player player;
 
-void Server::onConnect(ENetPeer *peer) {
+void Server::onConnect(ServerData *host) {
 	PacketData *data = p.CreateOnConnectPacket();
-	p.Send(peer, data);
+	p.Send(host->peer, data);
 }
 
-void Server::onReceive(ENetPeer *peer, ENetPacket *packet) {
+void Server::onReceive(ServerData *host, ENetPacket *packet) {
+	ENetPeer *peer = host->event.peer;
 	PacketData *data = p.Unpack(packet);
 	switch(data->type) {
 		case TYPE_2: {
@@ -54,6 +55,8 @@ void Server::onReceive(ENetPeer *peer, ENetPacket *packet) {
 				string password = Util.Explode("|",PDataArray[1])[1];
 				bool LoginResults = login.Authenticate(username, password);
 				if(LoginResults == true) {
+					host->event.peer->data = new PlayerInfo();
+					((PlayerInfo*)(peer->data))->username = username;
 					p.OnConsoleMessage(peer, "`2Login Successful");
 					p.SendOnLoginPacket(peer);
 				} else {
@@ -74,7 +77,7 @@ void Server::onReceive(ENetPeer *peer, ENetPacket *packet) {
 			string PData = (char*)data->data;
 			if(PData.find("action|join_request") == 0) {
 				world.SendWorld(peer, "lol");
-				player.SpawnPlayer(peer, TYPE_LOCAL);
+				player.SpawnPlayer(peer, ((PlayerInfo*)(peer->data))->username, TYPE_LOCAL);
 			}
 		}
 		break;
@@ -82,7 +85,7 @@ void Server::onReceive(ENetPeer *peer, ENetPacket *packet) {
 	//Util.DumpArray(data->data, data->length);
 }
 
-void Server::onDisconnect(ENetPeer *peer) {
+void Server::onDisconnect(ServerData *host) {
 
 }
 
@@ -101,13 +104,13 @@ int main ()
 		if(enet_host_service(host->server, &host->event, 100) > 0) {
 			host->peer = host->event.peer;
  			if(host->event.type == ENET_EVENT_TYPE_CONNECT) {
-				ServerEvent.onConnect(host->peer);
+				ServerEvent.onConnect(host);
 			}
 			if(host->event.type == ENET_EVENT_TYPE_RECEIVE) {
-				ServerEvent.onReceive(host->peer, host->event.packet);
+				ServerEvent.onReceive(host, host->event.packet);
 			}
 			if(host->event.type == ENET_EVENT_TYPE_DISCONNECT) {
-				ServerEvent.onDisconnect(host->peer);
+				ServerEvent.onDisconnect(host);
 			}
 
 		}

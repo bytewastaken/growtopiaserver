@@ -5,7 +5,7 @@
 using namespace std;
 
 bool Login::Authenticate(string username, string password) {
-	if(username == "a" && password == "a") {
+	if((username == "a" || username == "ryan") && password == "a") {
 		return true;
 	} else {
 		return false;
