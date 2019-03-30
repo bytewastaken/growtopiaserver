@@ -6,6 +6,7 @@
 #include <sstream>
 #include <utility>
 #include "utils.h"
+#include <fstream>
 
 using namespace std;
 
@@ -78,6 +79,17 @@ int Utils::HexDec(char x) {
 		default:
 			break;
 	}
+}
+
+int Utils::FileSize(string fileName) {
+	std::ifstream file(fileName, std::ios::binary | std::ios::ate);
+	return file.tellg();
+}
+
+void Utils::FileWriteToPointer(string fileName, unsigned char *buffer, int size) {
+	std::ifstream file(fileName, std::ios::binary | std::ios::ate);
+	file.seekg(0, std::ios::beg);
+	file.read((char*)(buffer), size);
 }
 
 void Utils::DumpArray(unsigned char* data, int len) {

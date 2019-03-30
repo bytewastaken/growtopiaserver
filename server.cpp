@@ -49,14 +49,19 @@ void Server::onReceive(ENetPeer *peer, ENetPacket *packet) {
 				bool LoginResults = login.Authenticate(username, password);
 				if(LoginResults == true) {
 					p.OnConsoleMessage(peer, "`2Login Successful");
+					p.SendOnLoginPacket(peer);
 				} else {
 					p.OnConsoleMessage(peer, "`4Login Error");
 					p.Disconnect(peer);
 				}
+			} else if(PData.find("action|refresh_item_data") == 0) {
+				p.SendItemsDat(peer);
+			} else if(PData.find("action|enter_game") == 0){
+				p.OnConsoleMessage(peer, "`2Welcome to ColdChip's Private Server!");
 			}
 		break;
 	}
-	//this->DumpArray(packet->data, packet->dataLength);
+	//Util.DumpArray(data->data, 200);
 }
 
 void Server::onDisconnect(ENetPeer *peer) {

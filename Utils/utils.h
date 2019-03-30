@@ -13,4 +13,6 @@ class Utils {
 		Array Explode(const string &delimiter, const string &str);
 		void DumpArray(unsigned char* data, int len);
 		int HexDec(char x);
+		int FileSize(string fileName);
+		void FileWriteToPointer(string fileName, unsigned char *buffer, int size);
 };

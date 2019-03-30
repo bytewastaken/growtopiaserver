@@ -10,6 +10,10 @@ const int TYPE_3 = 3;
 
 const int TYPE_4 = 4;
 
+const string PacketHeader = "0400000001000000FFFFFFFF00000000080000000000000000000000000000000000000000000000000000000000000000000000000000000000000000";
+
+const string ItemsDatPacketHeader = "0400000010000000FFFFFFFF000000000800000000000000000000000000000000000000000000000000000000000000000000000000000000000000";
+
 struct PacketData {
 	int type;
 	unsigned char *data;
@@ -28,6 +32,9 @@ class Packet {
 		PacketData *PacketEnd(PacketData *p);
 		void OnConsoleMessage(ENetPeer *peer, string data);
 		void Disconnect(ENetPeer *peer);
+		void SendOnLoginPacket(ENetPeer *peer);
+		void SendItemsDat(ENetPeer *peer);
+		PacketData *AppendInt(PacketData *p, int val);
 	private:
 		PacketData *MakeRawPacket(int num, unsigned char* data, int len);
 };

@@ -25,6 +25,31 @@ void Packet::Disconnect(ENetPeer *peer) {
 	enet_peer_disconnect_later(peer, 0);
 }
 
+void Packet::SendOnLoginPacket(ENetPeer *peer) {
+	PacketData *sendData = this->PacketEnd(this->AppendString(this->AppendString(this->AppendString(this->AppendString(this->AppendInt(this->AppendString(this->CreatePacket(), "OnSuperMainStartAcceptLogonHrdxs47254722215a"), 1109100565), "ubistatic-a.akamaihd.net"), "0098/CDNContent3/cache/"), "lol.com"), "proto=42|choosemusic=audio/mp3/about_theme.mp3|active_holiday=0|"));
+	this->Send(peer, sendData);
+}
+
+void Packet::SendItemsDat(ENetPeer *peer) {
+	Utils util;
+	int itemsDatSize = util.FileSize("items.dat");
+	unsigned char *itemsDat = new unsigned char[60 + itemsDatSize];
+	for (int i = 0; i < ItemsDatPacketHeader.length(); i += 2)
+	{
+		char x = util.HexDec(ItemsDatPacketHeader[i]);
+		x = x << 4;
+		x += util.HexDec(ItemsDatPacketHeader[i + 1]);
+		memcpy(itemsDat + (i / 2), &x, 1);
+		if (ItemsDatPacketHeader.length() > 60 * 2) throw 0;
+	}
+	memcpy(itemsDat + 56, &itemsDatSize, 4);
+	util.FileWriteToPointer("items.dat", itemsDat + 60, itemsDatSize);
+	PacketData *sendData = new PacketData();
+	sendData->data = itemsDat;
+	sendData->length = 60 + itemsDatSize;
+	this->Send(peer, sendData);
+}
+
 PacketData *Packet::CreateOnConnectPacket() {
 	PacketData *data = new PacketData();
 	data = this->MakeRawPacket(1, 0, 0);
@@ -59,14 +84,13 @@ PacketData *Packet::MakeRawPacket(int num, unsigned char* data, int len) {
 PacketData *Packet::CreatePacket() {
 	Utils util;
 	unsigned char* data = new unsigned char[61];
-	string asdf = "0400000001000000FFFFFFFF00000000080000000000000000000000000000000000000000000000000000000000000000000000000000000000000000";
-	for (int i = 0; i < asdf.length(); i += 2)
+	for (int i = 0; i < PacketHeader.length(); i += 2)
 	{
-		char x = util.HexDec(asdf[i]);
+		char x = util.HexDec(PacketHeader[i]);
 		x = x << 4;
-		x += util.HexDec(asdf[i + 1]);
+		x += util.HexDec(PacketHeader[i + 1]);
 		memcpy(data + (i / 2), &x, 1);
-		if (asdf.length() > 61 * 2) throw 0;
+		if (PacketHeader.length() > 61 * 2) throw 0;
 	}
 	PacketData *packet = new PacketData();
 	packet->data = data;
@@ -103,5 +127,19 @@ PacketData *Packet::PacketEnd(PacketData *p) {
 	*(int*)(p->data + 56) = p->indexes;//p.len-60;//p.indexes;
 	*(unsigned char*)(p->data + 60) = p->indexes;
 	//*(p.data + 57) = p.indexes;
+	return p;
+}
+
+PacketData *Packet::AppendInt(PacketData *p, int val) {
+	//p.data[56] += 1;
+	unsigned char* n = new unsigned char[p->length + 2 + 4];
+	memcpy(n, p->data, p->length);
+	delete p->data;
+	p->data = n;
+	n[p->length] = p->indexes;
+	n[p->length + 1] = 9;
+	memcpy(n + p->length + 2, &val, 4);
+	p->length = p->length + 2 + 4;
+	p->indexes++;
 	return p;
 }
