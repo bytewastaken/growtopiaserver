@@ -16,6 +16,7 @@
 #include "server.h"
 #include "Packet/packet.h"
 #include "Utils/utils.h"
+#include "Login/login.h"
 
 using namespace std;
 
@@ -29,6 +30,8 @@ Packet p;
 
 Utils Util;
 
+Login login;
+
 void Server::onConnect(ENetPeer *peer) {
 	PacketData *data = p.CreateOnConnectPacket();
 	p.Send(peer, data);
@@ -39,7 +42,18 @@ void Server::onReceive(ENetPeer *peer, ENetPacket *packet) {
 	switch(data->type) {
 		case TYPE_2:
 			string PData = (char*)data->data;
-			Array PDataArray = Util.Explode("\r\n", PData);
+			Array PDataArray = Util.Explode("\n", PData);
+			if(PData.find("tankIDName") == 0) {
+				string username = Util.Explode("|",PDataArray[0])[1];
+				string password = Util.Explode("|",PDataArray[1])[1];
+				bool LoginResults = login.Authenticate(username, password);
+				if(LoginResults == true) {
+					p.OnConsoleMessage(peer, "`2Login Successful");
+				} else {
+					p.OnConsoleMessage(peer, "`4Login Error");
+					p.Disconnect(peer);
+				}
+			}
 		break;
 	}
 	//this->DumpArray(packet->data, packet->dataLength);

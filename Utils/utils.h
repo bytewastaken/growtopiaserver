@@ -12,4 +12,5 @@ class Utils {
 	public:
 		Array Explode(const string &delimiter, const string &str);
 		void DumpArray(unsigned char* data, int len);
+		int HexDec(char x);
 };
