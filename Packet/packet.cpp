@@ -6,8 +6,6 @@
 
 using namespace std;
 
-Utils u;
-
 void Packet::getType() {
 
 }

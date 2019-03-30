@@ -15,6 +15,7 @@
 #include <utility>
 #include "server.h"
 #include "Packet/packet.h"
+#include "Utils/utils.h"
 
 using namespace std;
 
@@ -26,6 +27,8 @@ Server ServerEvent;
 
 Packet p;
 
+Utils Util;
+
 void Server::onConnect(ENetPeer *peer) {
 	PacketData *data = p.CreateOnConnectPacket();
 	p.Send(peer, data);
@@ -35,7 +38,8 @@ void Server::onReceive(ENetPeer *peer, ENetPacket *packet) {
 	PacketData *data = p.Unpack(packet);
 	switch(data->type) {
 		case TYPE_2:
-			
+			string PData = (char*)data->data;
+			Array PDataArray = Util.Explode("\r\n", PData);
 		break;
 	}
 	//this->DumpArray(packet->data, packet->dataLength);

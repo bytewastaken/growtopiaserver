@@ -4,8 +4,12 @@
 #include <sstream>
 #include <utility>
 
+#define Array vector<string>
+
+using namespace std;
+
 class Utils {
 	public:
-		std::vector<std::string> Explode(std::string const &s, const char &delim);
+		Array Explode(const string &delimiter, const string &str);
 		void DumpArray(unsigned char* data, int len);
 };
