@@ -3,6 +3,8 @@ ColdChip - Growtopia Server
 
 This is an advanced Growtopia Server made in C++
 
+Some functions are copied from [https://github.com/GrowtopiaNoobs/GrowtopiaServer](https://github.com/GrowtopiaNoobs/GrowtopiaServer)
+
 [![Build Status](https://api.travis-ci.org/coldchip/growtopiaserver.svg?branch=master)](https://api.travis-ci.org/coldchip/growtopiaserver.svg?branch=master)
 
 Installation / Usage
