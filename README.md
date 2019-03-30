@@ -1,7 +1,7 @@
 ColdChip - Growtopia Server
 ===========================
 
-This is a advanced Growtopia Server made in C++
+This is an advanced Growtopia Server made in C++
 
 [![Build Status](https://api.travis-ci.org/coldchip/growtopiaserver.svg?branch=master)](https://api.travis-ci.org/coldchip/growtopiaserver.svg?branch=master)
 
