@@ -4,7 +4,7 @@ OUTPUT=server
 
 INCLUDE_MODULES=enet
 
-INCLUDE_FILES=Player/player.cpp Login/login.cpp Packet/packet.cpp Utils/utils.cpp
+INCLUDE_FILES=Player/player.cpp Login/login.cpp Packet/packet.cpp Utils/utils.cpp World/world.cpp
 
 DISPLAY_TEXT=Compiling Files
 

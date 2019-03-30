@@ -17,6 +17,7 @@
 #include "Packet/packet.h"
 #include "Utils/utils.h"
 #include "Login/login.h"
+#include "World/world.h"
 
 using namespace std;
 
@@ -32,6 +33,8 @@ Utils Util;
 
 Login login;
 
+World world;
+
 void Server::onConnect(ENetPeer *peer) {
 	PacketData *data = p.CreateOnConnectPacket();
 	p.Send(peer, data);
@@ -40,7 +43,7 @@ void Server::onConnect(ENetPeer *peer) {
 void Server::onReceive(ENetPeer *peer, ENetPacket *packet) {
 	PacketData *data = p.Unpack(packet);
 	switch(data->type) {
-		case TYPE_2:
+		case TYPE_2: {
 			string PData = (char*)data->data;
 			Array PDataArray = Util.Explode("\n", PData);
 			if(PData.find("tankIDName") == 0) {
@@ -58,10 +61,21 @@ void Server::onReceive(ENetPeer *peer, ENetPacket *packet) {
 				p.SendItemsDat(peer);
 			} else if(PData.find("action|enter_game") == 0){
 				p.OnConsoleMessage(peer, "`2Welcome to ColdChip's Private Server!");
+				PacketData *data = p.PacketEnd(p.AppendString(p.AppendString(p.CreatePacket(), "OnRequestWorldSelectMenu"), "default|LOL\nadd_button|Showing: `wWorlds``|_catselect_|0.6|3529161471|\nadd_floater|LOL|0|0.55|3529161471\n"));
+				p.Send(peer, data);
 			}
+		}
+		break;
+
+		case TYPE_3: {
+			string PData = (char*)data->data;
+			if(PData.find("action|join_request") == 0) {
+				WorldData *wData = world.GetWorld("lol");
+			}
+		}
 		break;
 	}
-	//Util.DumpArray(data->data, 200);
+	//Util.DumpArray(data->data, data->length);
 }
 
 void Server::onDisconnect(ENetPeer *peer) {
