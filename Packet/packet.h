@@ -40,7 +40,9 @@ class Packet {
 		void getType();
 		void Send(ENetPeer *peer, PacketData *data);
 		PacketData *CreateOnConnectPacket();
-		PacketData *Unpack(ENetPacket *packet);
+		PacketData *UnpackText(ENetPacket *packet);
+		PacketData *UnpackBinary(ENetPacket *packet);
+		PacketData *ProbeType(ENetPacket *packet);
 		PacketData *CreatePacket();
 		PacketData *AppendString(PacketData *p, string str);
 		PacketData *PacketEnd(PacketData *p);
@@ -51,6 +53,8 @@ class Packet {
 		PacketData *AppendInt(PacketData *p, int val);
 		PlayerMoving *UnpackPlayerMoving(PacketData *data);
 		PacketData *PackPlayerMoving(PlayerMoving *data);
+		PacketData *AppendIntx(PacketData *p, int val);
+		void OnTalkBubble(ENetPeer *peer, int netID, string data);
 	private:
 		PacketData *MakeRawPacket(int num, unsigned char* data, int len);
 };

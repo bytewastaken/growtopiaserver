@@ -97,3 +97,11 @@ void Utils::DumpArray(unsigned char* data, int len) {
         printf("Index: %i Hex: %02x Data: %c\r\n", i, data[i], data[i]);
     }
 }
+
+string Utils::ToString(unsigned char *data, int length) {
+	string result = "";
+	for(int i = 0; i < length; i++) {
+		result += data[i];
+	}
+	return result;
+}

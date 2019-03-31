@@ -15,4 +15,5 @@ class Utils {
 		int HexDec(char x);
 		int FileSize(string fileName);
 		void FileWriteToPointer(string fileName, unsigned char *buffer, int size);
+		string ToString(unsigned char *data, int length);
 };

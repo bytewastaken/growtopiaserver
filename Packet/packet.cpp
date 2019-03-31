@@ -14,10 +14,16 @@ void Packet::getType() {
 void Packet::Send(ENetPeer *peer, PacketData *data) {
 	ENetPacket *packet = enet_packet_create(data->data, data->length, ENET_PACKET_FLAG_RELIABLE);
 	enet_peer_send(peer, 0, packet);
+	delete(data->data);
 }
 
 void Packet::OnConsoleMessage(ENetPeer *peer, string data) {
 	PacketData *sendData = this->PacketEnd(this->AppendString(this->AppendString(this->CreatePacket(), "OnConsoleMessage"), data));
+	this->Send(peer, sendData);
+}
+
+void Packet::OnTalkBubble(ENetPeer *peer, int netID, string data) {
+	PacketData *sendData = this->PacketEnd(this->AppendIntx(this->AppendString(this->AppendIntx(this->AppendString(this->CreatePacket(), "OnTalkBubble"), netID), data), 0));
 	this->Send(peer, sendData);
 }
 
@@ -56,12 +62,36 @@ PacketData *Packet::CreateOnConnectPacket() {
 	return data;
 }
 
-PacketData *Packet::Unpack(ENetPacket *packet) {
+PacketData *Packet::UnpackText(ENetPacket *packet) {
 	Utils u;
 	PacketData *data = new PacketData();
 	data->type = *packet->data;
 	data->data = packet->data + 4;
-	data->length = packet->dataLength - 5;
+	data->length = packet->dataLength - 4;
+	int zero = 0;
+	memcpy(packet->data + packet->dataLength - 1, &zero, 1);
+	return data;
+}
+
+PacketData *Packet::UnpackBinary(ENetPacket *packet) {
+	Utils u;
+	PacketData *data = new PacketData();
+	if(packet->dataLength >= 0x3C) {
+		data->type = *packet->data;
+		data->data = packet->data + 4;
+		data->length = packet->dataLength - 4;
+		int zero = 0;
+		memcpy(packet->data + 56, &zero, 4);
+	}
+	return data;
+}
+
+PacketData *Packet::ProbeType(ENetPacket *packet) {
+	Utils u;
+	PacketData *data = new PacketData();
+	data->type = *packet->data;
+	data->data = 0;
+	data->length = 0;
 	return data;
 }
 
@@ -144,6 +174,20 @@ PacketData *Packet::AppendInt(PacketData *p, int val) {
 	return p;
 }
 
+PacketData *Packet::AppendIntx(PacketData *p, int val) {
+	//p.data[56] += 1;
+	unsigned char* n = new unsigned char[p->length + 2 + 4];
+	memcpy(n, p->data, p->length);
+	delete p->data;
+	p->data = n;
+	n[p->length] = p->indexes;
+	n[p->length + 1] = 5;
+	memcpy(n + p->length + 2, &val, 4);
+	p->length = p->length + 2 + 4;
+	p->indexes++;
+	return p;
+}
+
 PlayerMoving *Packet::UnpackPlayerMoving(PacketData *data) {
 	PlayerMoving* dataStruct = new PlayerMoving;
 	memcpy(&dataStruct->packetType, data->data, 4);
@@ -160,9 +204,9 @@ PlayerMoving *Packet::UnpackPlayerMoving(PacketData *data) {
 }
 
 PacketData *Packet::PackPlayerMoving(PlayerMoving *dataStruct) {
-	unsigned char* data = new unsigned char[56];
+	unsigned char* data = new unsigned char[61];
 	PacketData *PData = new PacketData();
-	for (int i = 0; i < 56; i++)
+	for (int i = 0; i < 61; i++)
 	{
 		data[i] = 0;
 	}
@@ -179,6 +223,6 @@ PacketData *Packet::PackPlayerMoving(PlayerMoving *dataStruct) {
 	memcpy(data + 48, &dataStruct->punchX, 4);
 	memcpy(data + 52, &dataStruct->punchY, 4);
 	PData->data = data;
-	PData->length = 56;
+	PData->length = 61;
 	return PData;
 }
