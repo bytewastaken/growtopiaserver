@@ -4,7 +4,7 @@ OUTPUT=server
 
 INCLUDE_MODULES=-lenet -lpthread
 
-INCLUDE_FILES=Player/player.cpp Login/login.cpp Packet/packet.cpp Utils/utils.cpp World/world.cpp
+INCLUDE_FILES=Player/player.cpp Command/command.cpp Login/login.cpp Packet/packet.cpp Utils/utils.cpp World/world.cpp
 
 DISPLAY_TEXT=Compiling Files
 

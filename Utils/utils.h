@@ -16,4 +16,9 @@ class Utils {
 		int FileSize(string fileName);
 		void FileWriteToPointer(string fileName, unsigned char *buffer, int size);
 		string ToString(unsigned char *data, int length);
+		bool PathExists(string s);
+		bool FileExists(const char *fileName);
+		string AlphaNumeric(string name);
+		char *ReadFile(string fileName);
+		void WriteFile(string fileName, char *data, int length);
 };

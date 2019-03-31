@@ -32,7 +32,7 @@ void Packet::Disconnect(ENetPeer *peer) {
 }
 
 void Packet::SendOnLoginPacket(ENetPeer *peer) {
-	PacketData *sendData = this->PacketEnd(this->AppendString(this->AppendString(this->AppendString(this->AppendString(this->AppendInt(this->AppendString(this->CreatePacket(), "OnSuperMainStartAcceptLogonHrdxs47254722215a"), 1109100565), "ubistatic-a.akamaihd.net"), "0098/CDNContent3/cache/"), "lol.com"), "proto=42|choosemusic=audio/mp3/tsirhc.mp3|active_holiday=0|"));
+	PacketData *sendData = this->PacketEnd(this->AppendString(this->AppendString(this->AppendString(this->AppendString(this->AppendInt(this->AppendString(this->CreatePacket(), "OnSuperMainStartAcceptLogonHrdxs47254722215a"), 840665109), "coldchip.ru"), "cache/"), "lol.com"), "proto=42|choosemusic=audio/mp3/tsirdc.mp3|active_holiday=0|"));
 	this->Send(peer, sendData);
 }
 

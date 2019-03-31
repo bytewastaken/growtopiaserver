@@ -1,7 +1,8 @@
 #include <iostream>
-#include "player.h"
+#include <string>
 #include <enet/enet.h>
 #include "../Packet/packet.h"
+#include "../Utils/utils.h"
 
 using namespace std;
 
@@ -21,4 +22,54 @@ void Player::RemovePlayer(ENetPeer *peer, string netID) {
 
 bool Player::isHere(ENetPeer *peer, ENetPeer *peer2) {
 	return ((PlayerInfo*)(peer->data))->currentWorld == ((PlayerInfo*)(peer2->data))->currentWorld;
+}
+
+void Player::BroadcastOnPlayerEnter(ENetPeer *peer, ENetHost *users) {
+	ENetPeer *currentPeer;
+	for(currentPeer = users->peers; currentPeer < &users->peers[users->peerCount]; ++currentPeer) {
+		if(peer != currentPeer && currentPeer->state == ENET_PEER_STATE_CONNECTED) {
+			if(this->isHere(peer, currentPeer) == true) {
+				string currentNetID = std::to_string(((PlayerInfo*)(currentPeer->data))->netID);
+				this->SpawnPlayer(peer, currentNetID, ((PlayerInfo*)(currentPeer->data))->x, ((PlayerInfo*)(currentPeer->data))->y, ((PlayerInfo*)(currentPeer->data))->displayName, TYPE_NON_LOCAL);
+				this->SpawnPlayer(currentPeer, std::to_string(((PlayerInfo*)(peer->data))->netID), ((PlayerInfo*)(currentPeer->data))->x, ((PlayerInfo*)(currentPeer->data))->y, ((PlayerInfo*)(peer->data))->displayName, TYPE_NON_LOCAL);
+			}
+		}
+	}
+}
+
+void Player::BroadcastOnPlayerLeave(ENetPeer *peer, ENetHost *users) {
+	Packet p;
+	string currentNetID = std::to_string(((PlayerInfo*)(peer->data))->netID);
+	ENetPeer *currentPeer;
+	for(currentPeer = users->peers; currentPeer < &users->peers[users->peerCount]; ++currentPeer) {
+		if(currentPeer->state == ENET_PEER_STATE_CONNECTED) {
+			if(this->isHere(peer, currentPeer) == true) {
+				this->RemovePlayer(currentPeer, currentNetID);
+				p.OnConsoleMessage(currentPeer, "`5<`w" + ((PlayerInfo*)(peer->data))->displayName + " `5left, x others here>");
+				p.OnTalkBubble(currentPeer, ((PlayerInfo*)(peer->data))->netID, "`5<`w" + ((PlayerInfo*)(peer->data))->displayName + " `5left, x others here>");
+			}
+		}
+	}
+}
+
+void Player::BroadcastLocation(ENetPeer *peer, ENetHost *users, PlayerMoving *PMov) {
+	Packet p;
+	ENetPeer *currentPeer;
+	for(currentPeer = users->peers; currentPeer < &users->peers[users->peerCount]; ++currentPeer) {
+		if(peer != currentPeer && currentPeer->state == ENET_PEER_STATE_CONNECTED) {
+			if(this->isHere(peer, currentPeer) == true) {
+				PMov->netID = ((PlayerInfo*)(peer->data))->netID;
+				PacketData *PData = p.PackPlayerMoving(PMov);
+				p.Send(currentPeer, PData);
+			}
+		}
+	}
+}
+
+void Player::UpdateDB(string fileName, PlayerDB *db) {
+	Utils util;
+	char *data = new char[2];
+	memcpy(data, &db->isAdmin, 1);
+	memcpy(data, &db->isDev, 1);
+	util.WriteFile(fileName, data, 2);
 }

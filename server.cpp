@@ -15,11 +15,11 @@
 #include <fstream>
 #include <utility>
 #include "server.h"
-#include "Packet/packet.h"
+#include "Packet/packet.h" // It includes player.h too
 #include "Utils/utils.h"
 #include "Login/login.h"
 #include "World/world.h"
-#include "Player/player.h"
+#include "Command/command.h"
 
 using namespace std;
 
@@ -38,6 +38,8 @@ Login login;
 World world;
 
 Player player;
+
+Command command;
 
 int CID = 1;
 
@@ -58,8 +60,17 @@ void Server::onReceive(ServerData *host, ENetPacket *packet) {
 			if(PData.find("tankIDName") == 0) {
 				string username = Util.Explode("|",PDataArray[0])[1];
 				string password = Util.Explode("|",PDataArray[1])[1];
-				bool LoginResults = login.Authenticate(username, password);
-				if(LoginResults == true) {
+				LoginResults *loginResult = login.Authenticate(username, password);
+				if(loginResult->success == true) {
+					if(loginResult->isAdmin == true) {
+						((PlayerInfo*)(peer->data))->isAdmin = true;
+						((PlayerInfo*)(peer->data))->displayName = "`5@" + username + "`w";
+					} else if(loginResult->isDev == true) {
+						((PlayerInfo*)(peer->data))->isDev = true;
+						((PlayerInfo*)(peer->data))->displayName = "`6@" + username + "`w";
+					} else {
+						((PlayerInfo*)(peer->data))->displayName = username;
+					}
 					((PlayerInfo*)(peer->data))->username = username;
 					p.OnConsoleMessage(peer, "`2Login Successful");
 					p.SendOnLoginPacket(peer);
@@ -67,6 +78,7 @@ void Server::onReceive(ServerData *host, ENetPacket *packet) {
 					p.OnConsoleMessage(peer, "`4Login Error");
 					p.Disconnect(peer);
 				}
+				delete loginResult;
 			} else if(PData.find("action|refresh_item_data") == 0) {
 				p.SendItemsDat(peer);
 			} else if(PData.find("action|enter_game") == 0){
@@ -75,16 +87,7 @@ void Server::onReceive(ServerData *host, ENetPacket *packet) {
 				p.Send(peer, WorldOffersData);
 			} else if(PData.find("action|input") == 0){
 				string TextData = Util.Explode("|",PDataArray[1])[2];
-				ENetPeer *currentPeer;
-				for(currentPeer = host->server->peers; currentPeer < &host->server->peers[host->server->peerCount]; ++currentPeer) {
-					if(currentPeer->state == ENET_PEER_STATE_CONNECTED) {
-						if(player.isHere(peer, currentPeer) == true) {
-							string SenderUsername = ((PlayerInfo*)(currentPeer->data))->username;
-							p.OnConsoleMessage(currentPeer, "<" + SenderUsername + "> " + TextData);
-							p.OnTalkBubble(currentPeer, ((PlayerInfo*)(peer->data))->netID, TextData);
-						}
-					}
-				}
+				command.SendTextToAllUsersInWorld(peer, host->server, TextData);
 			} else {
 				p.OnConsoleMessage(peer, "`4Invalid packet. ");
 			}
@@ -101,29 +104,10 @@ void Server::onReceive(ServerData *host, ENetPacket *packet) {
 				((PlayerInfo*)(peer->data))->netID = CID;
 				CID++;
 				string MyNetID = std::to_string(((PlayerInfo*)(peer->data))->netID);
-				player.SpawnPlayer(peer, MyNetID, 100, 200, ((PlayerInfo*)(peer->data))->username, TYPE_LOCAL);
-				ENetPeer *currentPeer;
-				for(currentPeer = host->server->peers; currentPeer < &host->server->peers[host->server->peerCount]; ++currentPeer) {
-					if(peer != currentPeer && currentPeer->state == ENET_PEER_STATE_CONNECTED) {
-						if(player.isHere(peer, currentPeer) == true) {
-							string currentNetID = std::to_string(((PlayerInfo*)(currentPeer->data))->netID);
-							player.SpawnPlayer(peer, currentNetID, ((PlayerInfo*)(currentPeer->data))->x, ((PlayerInfo*)(currentPeer->data))->y, ((PlayerInfo*)(currentPeer->data))->username, TYPE_NON_LOCAL);
-							player.SpawnPlayer(currentPeer, MyNetID, ((PlayerInfo*)(currentPeer->data))->x, ((PlayerInfo*)(currentPeer->data))->y, ((PlayerInfo*)(peer->data))->username, TYPE_NON_LOCAL);
-						}
-					}
-				}
+				player.SpawnPlayer(peer, MyNetID, 100, 200, ((PlayerInfo*)(peer->data))->displayName, TYPE_LOCAL);
+				player.BroadcastOnPlayerEnter(peer, host->server);
 			} else if(PData.find("action|quit_to_exit") == 0) {
-				string currentNetID = std::to_string(((PlayerInfo*)(peer->data))->netID);
-				ENetPeer *currentPeer;
-				for(currentPeer = host->server->peers; currentPeer < &host->server->peers[host->server->peerCount]; ++currentPeer) {
-					if(currentPeer->state == ENET_PEER_STATE_CONNECTED) {
-						if(player.isHere(peer, currentPeer) == true) {
-							player.RemovePlayer(currentPeer, currentNetID);
-							p.OnConsoleMessage(currentPeer, "`5<`w" + ((PlayerInfo*)(currentPeer->data))->username + " `5left, x others here>");
-							p.OnTalkBubble(currentPeer, ((PlayerInfo*)(peer->data))->netID, "`5<`w" + ((PlayerInfo*)(currentPeer->data))->username + " `5left, x others here>");
-						}
-					}
-				}
+				player.BroadcastOnPlayerLeave(peer, host->server);
 				((PlayerInfo*)(peer->data))->currentWorld = "EXIT";
 			} else if(PData.find("action|quit") == 0) {
 				enet_peer_disconnect_later(peer, 0);
@@ -137,16 +121,7 @@ void Server::onReceive(ServerData *host, ENetPacket *packet) {
 			if(PMov->packetType == 0) {
 				((PlayerInfo*)(peer->data))->x = PMov->x;
 				((PlayerInfo*)(peer->data))->y = PMov->y;
-				ENetPeer *currentPeer;
-				for(currentPeer = host->server->peers; currentPeer < &host->server->peers[host->server->peerCount]; ++currentPeer) {
-					if(peer != currentPeer && currentPeer->state == ENET_PEER_STATE_CONNECTED) {
-						if(player.isHere(peer, currentPeer) == true) {
-							PMov->netID = ((PlayerInfo*)(peer->data))->netID;
-							PacketData *PData = p.PackPlayerMoving(PMov);
-							p.Send(currentPeer, PData);
-						}
-					}
-				}
+				player.BroadcastLocation(peer, host->server, PMov);
 			}
 			delete PMov;
 		} 
@@ -157,21 +132,13 @@ void Server::onReceive(ServerData *host, ENetPacket *packet) {
 
 void Server::onDisconnect(ServerData *host) {
 	ENetPeer *peer = host->event.peer;
-	string currentNetID = std::to_string(((PlayerInfo*)(peer->data))->netID);
-	ENetPeer *currentPeer;
-	for(currentPeer = host->server->peers; currentPeer < &host->server->peers[host->server->peerCount]; ++currentPeer) {
-		if(peer != currentPeer && currentPeer->state == ENET_PEER_STATE_CONNECTED) {
-			if(player.isHere(peer, currentPeer) == true) {
-				player.RemovePlayer(currentPeer, currentNetID);
-			}
-		}
-	}
+	player.BroadcastOnPlayerLeave(peer, host->server);
 	delete (char*)host->event.peer->data;
 }
 
 void Status() {
 	while(true) {
-		usleep(1000 * 1000);
+		usleep(250 * 1000);
 		int i = 0;
 		ENetPeer *currentPeer;
 		for(currentPeer = host->server->peers; currentPeer < &host->server->peers[host->server->peerCount]; ++currentPeer) {
@@ -182,7 +149,7 @@ void Status() {
 		if(i > 1) {
 			printf("\r  [ %i Users are online. ]", i);
 		} else {
-			printf("\r  [ %i User is online. ]", i);
+			printf("\r  [ %i User is online.   ]", i);
 		}
 	}
 }

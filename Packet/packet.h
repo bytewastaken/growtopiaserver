@@ -1,4 +1,5 @@
 #include <string>
+#include "../Player/player.h"
 
 using namespace std;
 
@@ -19,20 +20,6 @@ struct PacketData {
 	unsigned char *data;
 	int length;
 	int indexes = 0;
-};
-
-struct PlayerMoving {
-	int packetType;
-	int netID;
-	float x;
-	float y;
-	int characterState;
-	int plantingTree;
-	float XSpeed;
-	float YSpeed;
-	int punchX;
-	int punchY;
-
 };
 
 class Packet {

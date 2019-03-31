@@ -7,6 +7,8 @@
 #include <utility>
 #include "utils.h"
 #include <fstream>
+#include <dirent.h>
+#include <fstream>
 
 using namespace std;
 
@@ -82,7 +84,7 @@ int Utils::HexDec(char x) {
 }
 
 int Utils::FileSize(string fileName) {
-	std::ifstream file(fileName, std::ios::binary | std::ios::ate);
+	std::ifstream file(fileName.c_str(), std::ios::binary | std::ios::ate);
 	return file.tellg();
 }
 
@@ -104,4 +106,47 @@ string Utils::ToString(unsigned char *data, int length) {
 		result += data[i];
 	}
 	return result;
+}
+
+bool Utils::PathExists(string s) {
+	DIR* dir = opendir(s.c_str());
+	if(dir) {
+		closedir(dir);
+		return true;
+	}
+	return false;
+}
+
+bool Utils::FileExists(const char *fileName) {
+	std::ifstream ifile(fileName);
+	return (bool)ifile;
+}
+
+string Utils::AlphaNumeric(string name) {
+	string newS;
+	for (char c : name) newS+=(c >= 'A' && c <= 'Z') ? c-('A'-'a') : c;
+	string ret;
+	for (int i = 0; i < newS.length(); i++)
+	{
+		if (newS[i] == '`') i++; else ret += newS[i];
+	}
+	string ret2;
+	for (char c : ret) if ((c >= 'a' && c <= 'z') || (c >= '0' && c <= '9')) ret2 += c;
+	return ret2;
+}
+
+char *Utils::ReadFile(string fileName) {
+	int pSize = this->FileSize(fileName);
+	char *buffer = new char[pSize + 1];
+	std::ifstream infile(fileName.c_str(), std::ifstream::binary);
+	infile.read(buffer,pSize);
+	infile.close();
+	return buffer;
+}
+
+void Utils::WriteFile(string fileName, char *data, int length) {
+	std::ofstream outfile(fileName.c_str(), std::ofstream::binary);
+	outfile.write(data, length);
+	delete[] data;
+	outfile.close();
 }
