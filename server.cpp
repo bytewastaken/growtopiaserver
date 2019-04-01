@@ -87,7 +87,7 @@ void Server::onReceive(ServerData *host, ENetPacket *packet) {
 				p.Send(peer, WorldOffersData);
 			} else if(PData.find("action|input") == 0){
 				string TextData = Util.Explode("|",PDataArray[1])[2];
-				command.SendTextToAllUsersInWorld(peer, host->server, TextData);
+				command.ProccessCommand(peer, host->server, TextData);
 			} else {
 				p.OnConsoleMessage(peer, "`4Invalid packet. ");
 			}
@@ -99,6 +99,7 @@ void Server::onReceive(ServerData *host, ENetPacket *packet) {
 			PacketData *data = p.UnpackText(packet);
 			string PData = (char*)data->data;
 			if(PData.find("action|join_request") == 0) {
+				player.SendInventory(peer);
 				world.SendWorld(peer, "lol");
 				((PlayerInfo*)(peer->data))->currentWorld = "lol";
 				((PlayerInfo*)(peer->data))->netID = CID;
@@ -124,6 +125,14 @@ void Server::onReceive(ServerData *host, ENetPacket *packet) {
 				player.BroadcastLocation(peer, host->server, PMov);
 			}
 			delete PMov;
+			PlayerMoving *PMov2 = p.UnpackPlayerMoving(data);
+			if (PMov2->punchX != -1 && PMov2->punchY != -1) {
+				if(PMov2->packetType == 3) {
+					world.ApplyTileChange(PMov2->punchX, PMov2->punchY, PMov2->plantingTree);
+					player.BroadcastTileChange(peer, host->server, PMov2);
+				}
+			}
+			delete PMov2;
 		} 
 		break;
 	}

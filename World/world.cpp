@@ -40,23 +40,42 @@ void World::SendWorld(ENetPeer *peer, string name) {
 	memcpy(data + payloadLen + 6 + nameLen, &ySize, 4);
 	memcpy(data + payloadLen + 10 + nameLen, &square, 4);
 	unsigned char* blockPtr = data + payloadLen + 14 + nameLen;
-	for (int i = 0; i < square; i++) {
-		if ((square - i) < 400) {
-			int16_t block = 8;
-			memcpy(blockPtr, &block, 2);
-			int type = 0x00000000;
-			type |= 0x04000000;
-			memcpy(blockPtr + 4, &type, 4);
-			/*if (worldInfo->items[i].foreground % 2)
-			{
-				blockPtr += 6;
-			}*/
-		} else {
-			memcpy(blockPtr, &zero, 2);
+	string worldFile = "Database/Worlds/lol.bin";
+	if(util.FileExists(worldFile.c_str())) {
+		char *ReadWorldData = new char[square * 8];
+		ReadWorldData = util.ReadFile(worldFile);
+		for (int i = 0; i < square; i++) {
+			memcpy(blockPtr, ReadWorldData, (i * 8));
 		}
-		memcpy(blockPtr + 2, &zero, 2);
-		blockPtr += 8;
+		delete ReadWorldData;
+	} else {
+		for (int i = 0; i < square; i++) {
+			if ((square - i) <= 400) {
+				int16_t block = 8;
+				memcpy(blockPtr, &block, 2);
+				int type = 0x00000000;
+				type |= 0;
+				memcpy(blockPtr + 4, &type, 4);
+				/*if (worldInfo->items[i].foreground % 2)
+				{
+					blockPtr += 6;
+				}*/
+			} else {
+				memcpy(blockPtr, &zero, 2);
+			}
+			memcpy(blockPtr + 2, &zero, 2);
+			blockPtr += 8;
+		}
+
+		char *WDataBinary = new char[square * 8];
+
+		memcpy(WDataBinary, data + payloadLen + 14 + nameLen, square * 8);
+
+		util.WriteFile(worldFile, WDataBinary, square * 8);
+
+		delete WDataBinary;
 	}
+
 	memcpy(data + dataLen - 4, &smth, 4);
 	WorldData *wData = new WorldData();
 	wData->data = data;
@@ -66,4 +85,34 @@ void World::SendWorld(ENetPeer *peer, string name) {
 	PData->data = data;
 	PData->length = dataLen;
 	packet.Send(peer, PData);
+
+}
+
+void World::ApplyTileChange(int x, int y, int16_t tile) {
+	Utils util;
+	string worldFile = "Database/Worlds/lol.bin";
+	int FileSize = util.FileSize(worldFile.c_str());
+	char *ReadWorldData = new char[FileSize];
+	ReadWorldData = util.ReadFile(worldFile);
+	int index = ((100 * y) + x) * 8;
+	int zero = 0;
+	int16_t tileSet = 0;
+	memcpy(&tileSet, ReadWorldData + index, 2);
+	if(tileSet > 0) {
+		if(tileSet == 8) {
+
+		} else {
+			memcpy(ReadWorldData + index, &zero, 4);
+			memcpy(ReadWorldData + index + 4, &zero, 4);
+		}
+	} else {
+		if(tile == 8) {
+
+		} else {
+			memcpy(ReadWorldData + index, &tile, 2);
+			memcpy(ReadWorldData + index + 2, &zero, 2);
+			memcpy(ReadWorldData + index + 4, &zero, 4);
+		}
+	}
+	util.WriteFile(worldFile, ReadWorldData, FileSize);
 }

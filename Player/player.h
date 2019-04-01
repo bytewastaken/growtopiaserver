@@ -46,5 +46,7 @@ class Player {
 		void BroadcastOnPlayerEnter(ENetPeer *peer, ENetHost *users);
 		void BroadcastOnPlayerLeave(ENetPeer *peer, ENetHost *users);
 		void BroadcastLocation(ENetPeer *peer, ENetHost *users, PlayerMoving *PMov);
+		void BroadcastTileChange(ENetPeer *peer, ENetHost *users, PlayerMoving *PMov);
 		void UpdateDB(string fileName, PlayerDB *db);
+		void SendInventory(ENetPeer *peer);
 };

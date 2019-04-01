@@ -11,4 +11,5 @@ struct WorldData {
 class World {
 	public:
 		void SendWorld(ENetPeer *peer, string name);
+		void ApplyTileChange(int x, int y, int16_t tile);
 };

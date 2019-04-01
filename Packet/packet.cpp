@@ -22,6 +22,16 @@ void Packet::OnConsoleMessage(ENetPeer *peer, string data) {
 	this->Send(peer, sendData);
 }
 
+void Packet::OnBanMessage(ENetPeer *peer) {
+	PacketData *sendData = this->PacketEnd(this->AppendInt(this->AppendString(this->AppendString(this->AppendString(this->AppendString(this->CreatePacket(), "OnAddNotification"), "interface/atomic_button.rttex"), "`wWarning from `4Admin: `wYou've been `4BANNED `wfrom Growtopia for 729 days"), "audio/hub_open.wav"), 0));
+	this->Send(peer, sendData);
+}
+
+void Packet::OnRestartMessage(ENetPeer *peer) {
+	PacketData *sendData = this->PacketEnd(this->AppendInt(this->AppendString(this->AppendString(this->AppendString(this->AppendString(this->CreatePacket(), "OnAddNotification"), "interface/science_button.rttex"), "Restarting soon!"), "audio/mp3/suspended.mp3"), 0));
+	this->Send(peer, sendData);
+}
+
 void Packet::OnTalkBubble(ENetPeer *peer, int netID, string data) {
 	PacketData *sendData = this->PacketEnd(this->AppendIntx(this->AppendString(this->AppendIntx(this->AppendString(this->CreatePacket(), "OnTalkBubble"), netID), data), 0));
 	this->Send(peer, sendData);

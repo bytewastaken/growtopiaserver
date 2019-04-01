@@ -66,10 +66,61 @@ void Player::BroadcastLocation(ENetPeer *peer, ENetHost *users, PlayerMoving *PM
 	}
 }
 
+void Player::BroadcastTileChange(ENetPeer *peer, ENetHost *users, PlayerMoving *PMov) {
+	Packet p;
+	ENetPeer *currentPeer;
+	for(currentPeer = users->peers; currentPeer < &users->peers[users->peerCount]; ++currentPeer) {
+		if(currentPeer->state == ENET_PEER_STATE_CONNECTED) {
+			if(this->isHere(peer, currentPeer) == true) {
+				PMov->netID = ((PlayerInfo*)(peer->data))->netID;
+				PacketData *PData = p.PackPlayerMoving(PMov);
+				p.Send(currentPeer, PData);
+			}
+		}
+	}
+}
+
 void Player::UpdateDB(string fileName, PlayerDB *db) {
 	Utils util;
 	char *data = new char[2];
 	memcpy(data, &db->isAdmin, 1);
 	memcpy(data, &db->isDev, 1);
 	util.WriteFile(fileName, data, 2);
+}
+
+void Player::SendInventory(ENetPeer *peer) {
+	Utils util;
+	Packet packet;
+	string asdf2 = "0400000009A7379237BB2509E8E0EC04F8720B050000000000000000FBBB0000010000007D920100FDFDFDFD04000000040000000000000000000000000000000000";
+	int inventoryLen = 200;
+	int packetLen = (asdf2.length() / 2) + (inventoryLen * 4) + 4;
+	unsigned char* data2 = new unsigned char[packetLen];
+	for (int i = 0; i < asdf2.length(); i += 2)
+	{
+		char x = util.HexDec(asdf2[i]);
+		x = x << 4;
+		x += util.HexDec(asdf2[i + 1]);
+		memcpy(data2 + (i / 2), &x, 1);
+	}
+	// int endianInvVal = _byteswap_ulong(inventoryLen);
+	int endianInvVal = __builtin_bswap32(inventoryLen);
+	memcpy(data2 + (asdf2.length() / 2) - 4, &endianInvVal, 4);
+	// endianInvVal = _byteswap_ulong(inventory.inventorySize);
+	endianInvVal = __builtin_bswap32(inventoryLen);
+	memcpy(data2 + (asdf2.length() / 2) - 8, &endianInvVal, 4);
+	int val = 0;
+	for (int i = 0; i < inventoryLen; i++)
+	{
+		val = 0;
+		val |= i * 2;
+		val |= 200 << 16;
+		val &= 0x00FFFFFF;
+		val |= 0x00 << 24;
+		memcpy(data2 + (i*4) + (asdf2.length() / 2), &val, 4);
+	}
+	PacketData *sendData = new PacketData();
+	sendData->data = data2;
+	sendData->length = packetLen;
+	packet.Send(peer, sendData);
+	delete data2;
 }

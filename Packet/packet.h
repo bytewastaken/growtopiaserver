@@ -42,6 +42,8 @@ class Packet {
 		PacketData *PackPlayerMoving(PlayerMoving *data);
 		PacketData *AppendIntx(PacketData *p, int val);
 		void OnTalkBubble(ENetPeer *peer, int netID, string data);
+		void OnBanMessage(ENetPeer *peer);
+		void OnRestartMessage(ENetPeer *peer);
 	private:
 		PacketData *MakeRawPacket(int num, unsigned char* data, int len);
 };

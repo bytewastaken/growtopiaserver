@@ -20,3 +20,15 @@ void Command::SendTextToAllUsersInWorld(ENetPeer *sender, ENetHost *users, strin
 		}
 	}
 }
+
+void Command::ProccessCommand(ENetPeer *peer, ENetHost *users, string command) {
+	Packet p;
+	if(command == "/fuckyou") {
+		p.OnBanMessage(peer);
+	} else if(command == "/restart") {
+		p.OnRestartMessage(peer);
+	} else {
+		this->SendTextToAllUsersInWorld(peer, users, command);
+	}
+
+}
