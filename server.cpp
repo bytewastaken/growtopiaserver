@@ -98,15 +98,21 @@ void Server::onReceive(ServerData *host, ENetPacket *packet) {
 		case TYPE_3: {
 			PacketData *data = p.UnpackText(packet);
 			string PData = (char*)data->data;
+			Array PDataArray = Util.Explode("\n", PData);
 			if(PData.find("action|join_request") == 0) {
-				player.SendInventory(peer);
-				world.SendWorld(peer, "lol");
-				((PlayerInfo*)(peer->data))->currentWorld = "lol";
-				((PlayerInfo*)(peer->data))->netID = CID;
-				CID++;
-				string MyNetID = std::to_string(((PlayerInfo*)(peer->data))->netID);
-				player.SpawnPlayer(peer, MyNetID, 100, 200, ((PlayerInfo*)(peer->data))->displayName, TYPE_LOCAL);
-				player.BroadcastOnPlayerEnter(peer, host->server);
+				string worldName = Util.Explode("|", PDataArray[1])[1];
+				worldName = Util.AlphaNumeric(worldName);
+				if(world.SendWorld(peer, worldName)) {
+					player.SendInventory(peer);
+					((PlayerInfo*)(peer->data))->currentWorld = worldName;
+					((PlayerInfo*)(peer->data))->netID = CID;
+					CID++;
+					string MyNetID = std::to_string(((PlayerInfo*)(peer->data))->netID);
+					player.SpawnPlayer(peer, MyNetID, 100, 200, ((PlayerInfo*)(peer->data))->displayName, TYPE_LOCAL);
+					player.BroadcastOnPlayerEnter(peer, host->server);
+				} else {
+					p.OnConsoleMessage(peer, "`4Invalid world name");
+				}
 			} else if(PData.find("action|quit_to_exit") == 0) {
 				player.BroadcastOnPlayerLeave(peer, host->server);
 				((PlayerInfo*)(peer->data))->currentWorld = "EXIT";
@@ -128,7 +134,7 @@ void Server::onReceive(ServerData *host, ENetPacket *packet) {
 			PlayerMoving *PMov2 = p.UnpackPlayerMoving(data);
 			if (PMov2->punchX != -1 && PMov2->punchY != -1) {
 				if(PMov2->packetType == 3) {
-					world.ApplyTileChange(PMov2->punchX, PMov2->punchY, PMov2->plantingTree);
+					world.ApplyTileChange(PMov2->punchX, PMov2->punchY, PMov2->plantingTree, ((PlayerInfo*)(peer->data))->currentWorld);
 					player.BroadcastTileChange(peer, host->server, PMov2);
 				}
 			}
